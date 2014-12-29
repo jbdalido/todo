@@ -1,4 +1,7 @@
-# TODO
+TODO
+====
+
+# Work in progress not working yet
 
 **Has been made a million time, this is a personnal representation of one of the most made type of piece of software** 
 
@@ -84,20 +87,22 @@ The task is saved as a json file looking like this :
 
 Here's a bunch a possibilities of what you can do with your todo. 
 
-    todo -lo (ordered)
+    todo -l == todo list
+
+    todo list -o (ordered)
     - 15March
         | 1aef4f - [private] GoMarathon needs attention
         | mFQ4f - [work] Lorem
     - 12March
         | 1 - [private] - Loreum Dolor mothfucker
 
-    todo -l
+    todo list
     # TODOS (3) :
         | 1 - GoMarathon needs attention
         | 2 - Lorem
         | 3 - Loreum Dolor mothfucker
 
-    todo -lA (all) 
+    todo list A (all) 
     # TODOS (3) :
         | 1 - GoMarathon needs attention
         | 2 - Lorem
@@ -107,7 +112,7 @@ Here's a bunch a possibilities of what you can do with your todo.
         | 2 - Lorem
         | 3 - Loreum Dolor mothfucker
 
-    todo -ld 15 (dones)
+    todo list -d 15 (dones)
     # DONE (343) (last 15) :
         | 1 - GoMarathon needs attention
         | 2 - Lorem
@@ -115,10 +120,10 @@ Here's a bunch a possibilities of what you can do with your todo.
         ....
 
 
-    todo -L (Left)
+    todo list -L (Left)
     3
 
-    todo -D (Done)
+    todo list -D (Done)
     0
 
     todo add -m "add a todo task" -c Work
