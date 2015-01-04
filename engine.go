@@ -9,6 +9,7 @@ import (
 )
 
 type Engine struct {
+	ConfigPath      string
 	Path            string                  `json:"path"`
 	DefaultCategory string                  `json:"default"`
 	Index           map[string]IndexedTasks `json:"index"`
@@ -29,20 +30,34 @@ type IndexedTasks struct {
 func NewEngine() (*Engine, error) {
 	// Setup a new engine
 	e := &Engine{}
+	e.loadEnv()
 
-	data, err := OpenAndReadFile("/etc/todo.conf")
+	return e, nil
+}
+
+func (e *Engine) loadEnv() error {
+	home := os.Getenv("HOME")
+	if home == "" {
+		return fmt.Errorf("Cant read home variable")
+	}
+	e.ConfigPath = home + "/.todo.conf"
+
+	return nil
+}
+
+func (e *Engine) loadConfig() error {
+	// Load env variable
+	data, err := OpenAndReadFile(e.ConfigPath)
 	if err != nil {
-		return nil, fmt.Errorf("No Todo path has been setup yet, \nor /etc/todo.conf has been deleted\nor denied access\nRun todo init -p PATH to rebuild it.")
+		return fmt.Errorf("No Todo path has been setup yet, \nor %s has been deleted\nor denied access\nRun todo init -p PATH to rebuild it.", e.ConfigPath)
 	}
 
 	err = json.Unmarshal(data, e)
 	if err != nil {
-		return nil, fmt.Errorf("Your config file at /etc/todo.conf is not readable")
+		return fmt.Errorf("Your config file at /etc/todo.conf is not readable")
 	}
 
-	e.findTodos()
-
-	return e, nil
+	return nil
 }
 
 // save is saving datas as /etc/todo.conf
@@ -51,27 +66,15 @@ func (e *Engine) save() error {
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile("/etc/todo.conf", data, 0644)
+
+	err = ioutil.WriteFile(e.ConfigPath, data, 0644)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-// save is saving datas as /etc/todo.conf
-func (e *Engine) saveIndex() error {
-	data, err := json.Marshal(e.Index)
-	if err != nil {
-		return err
-	}
-	err = ioutil.WriteFile(e.Path+"/.index.tasks", data, 0644)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func InitEngine(path string, reload bool) error {
+func (e *Engine) InitEngine(path string, reload bool) error {
 	if _, err := os.Stat(path); err != nil {
 		err := os.Mkdir(path, 0644)
 		if err != nil {
@@ -82,13 +85,11 @@ func InitEngine(path string, reload bool) error {
 		return fmt.Errorf("Folder already exists at %s, use -r to reload an existing todo list", path)
 	}
 
-	e := &Engine{
-		Path: path,
-	}
+	e.Path = path
 
 	err := e.save()
 	if err != nil {
-		return fmt.Errorf("Initialization failed %s", err)
+		return fmt.Errorf("Initialization failed %s %s", e.ConfigPath, err)
 	}
 
 	return nil

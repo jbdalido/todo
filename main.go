@@ -96,7 +96,8 @@ func Pre() {
 }
 
 func Init(c *cli.Context) {
-	err := InitEngine(c.Args().First(), false)
+	Pre()
+	err := e.InitEngine(c.Args().First(), false)
 	if err != nil {
 		log.Fatalf("%s", err)
 	}
