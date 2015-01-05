@@ -32,15 +32,18 @@ func main() {
 					Name:  "ordered, o",
 					Usage: "order tasks by dates",
 				},
-				cli.IntFlag{
+				cli.BoolFlag{
 					Name:  "all, A",
-					Value: 10,
 					Usage: "display all tasks including (n) dones (A=n)",
 				},
-				cli.IntFlag{
+				cli.BoolFlag{
 					Name:  "done, d",
-					Value: 10,
 					Usage: "display only (d=n) dones tasks",
+				},
+				cli.StringFlag{
+					Name:  "category, c",
+					Value: "",
+					Usage: "filter by categories",
 				},
 			},
 			Action: List,
@@ -70,14 +73,16 @@ func main() {
 					Usage: "category to add task to",
 				},
 			},
+			Action: Add,
 		},
 		cli.Command{
 			Name:  "rm",
 			Usage: "rm a task by its id",
 		},
 		cli.Command{
-			Name:  "done",
-			Usage: "Set a task done by its id",
+			Name:   "done",
+			Usage:  "Set a task done by its id",
+			Action: Done,
 		},
 	}
 
@@ -96,8 +101,7 @@ func Pre() {
 }
 
 func Init(c *cli.Context) {
-	Pre()
-	err := e.InitEngine(c.Args().First(), false)
+	err := InitEngine(c.Args().First(), false)
 	if err != nil {
 		log.Fatalf("%s", err)
 	}
@@ -105,12 +109,31 @@ func Init(c *cli.Context) {
 
 func List(c *cli.Context) {
 	Pre()
-	e.List(c.Bool("ordered"), c.Bool("all"), c.Bool("done"))
+	err := e.List(c.Bool("ordered"), c.Bool("all"), c.Bool("done"), c.String("category"))
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func Create(c *cli.Context) {
 	Pre()
 	err := e.Create(c.Args().First())
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func Add(c *cli.Context) {
+	Pre()
+	err := e.Add(c.String("message"), c.String("category"))
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func Done(c *cli.Context) {
+	Pre()
+	err := e.Done(c.Args().First())
 	if err != nil {
 		log.Fatal(err)
 	}

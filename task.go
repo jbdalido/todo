@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/jbdalido/todo/Godeps/_workspace/src/gopkg.in/yaml.v2"
 	"io/ioutil"
+	"log"
 	"strings"
 	"time"
 )
@@ -29,7 +30,7 @@ func NewTask(msg, author, category string) (*Task, error) {
 	time := time.Now().Unix()
 
 	return &Task{
-		ID:             getID(msg, time),
+		ID:             getID(msg, category)[0:8],
 		Category:       strings.ToLower(category),
 		Author:         author,
 		Message:        msg,
@@ -53,6 +54,7 @@ func NewTaskFromJson(data []byte) (*Task, error) {
 
 	return t, nil
 }
+
 func NewTaskFromYaml(data []byte) (*Task, error) {
 	t := &Task{}
 	err := yaml.Unmarshal(data, t)
@@ -83,20 +85,9 @@ func (t *Task) Validate() error {
 }
 
 // encodeMessage is encoding a string to md5 to obtain a gitcommit-like id
-func getID(msg string, key int64) string {
-	sum := md5.Sum([]byte(msg + string(key)))
+func getID(msg, category string) string {
+	sum := md5.Sum([]byte(msg + category))
 	return fmt.Sprintf("%x", sum)
-}
-
-// EditMessage is used to edit the message of a task
-func (t *Task) EditMessage(msg, author string) error {
-	if msg == "" {
-		return fmt.Errorf("Task message can't be null")
-	}
-	t.Message = msg
-	t.UpdateTime = time.Now().Unix()
-
-	return nil
 }
 
 func (t *Task) Save(path string) error {
@@ -105,10 +96,11 @@ func (t *Task) Save(path string) error {
 		return err
 	}
 
-	err = ioutil.WriteFile(path+"/"+t.ID, []byte(data), 0644)
+	err = ioutil.WriteFile(path+"/"+t.ID, []byte(data), 0744)
 	if err != nil {
 		return err
 	}
+	log.Printf("Task %s saved", t.ID[0:8])
 	return nil
 }
 
@@ -128,4 +120,12 @@ func (t *Task) ToYaml() (string, error) {
 		return "", err
 	}
 	return string(data), nil
+}
+
+func (t *Task) IsDone() error {
+	if t.CompletionTime != 0 {
+		return fmt.Errorf("Task already completed")
+	}
+	t.CompletionTime = time.Now().Unix()
+	return nil
 }
