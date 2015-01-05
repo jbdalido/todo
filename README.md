@@ -1,5 +1,7 @@
 TODO
 ====
+# The code looks like crap, i'm switch to boltdb to have a cleaner system.
+
 # Working but it's quite inelegant for now (cli not fully integrated, display is lame), still a WIP
 
 **Has been made a million time, this is a personnal representation of one of the most made type of piece of software** 
